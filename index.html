@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Tetris</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app">
+    <header class="header">
+      <h1 class="logo" aria-label="Tetris">
+        <span class="l-t1">T</span><span class="l-e">E</span><span class="l-t2">T</span><span class="l-r">R</span><span class="l-i">I</span><span class="l-s">S</span>
+      </h1>
+    </header>
+
+    <main class="layout">
+      <section class="game" aria-label="Game">
+        <aside class="panel">
+          <div class="card">
+            <h2>Hold</h2>
+            <canvas id="hold" class="mini" data-w="120" data-h="80"></canvas>
+          </div>
+          <div class="card stats">
+            <div class="stat"><span>Score</span><strong id="score">0</strong></div>
+            <div class="stat"><span>Level</span><strong id="level">1</strong></div>
+            <div class="stat"><span>Lines</span><strong id="lines">0</strong></div>
+            <div class="stat"><span>Time</span><strong id="time">0:00</strong></div>
+          </div>
+        </aside>
+
+        <div class="board-wrap" id="boardWrap">
+          <canvas id="board"></canvas>
+
+          <div class="overlay" id="overlay">
+            <div class="pane" id="paneMenu">
+              <p class="pane-title">Ready?</p>
+              <div class="level-pick">
+                <span>Start level</span>
+                <div class="stepper">
+                  <button type="button" id="lvlDown" aria-label="Lower start level">&minus;</button>
+                  <output id="lvlValue">1</output>
+                  <button type="button" id="lvlUp" aria-label="Raise start level">+</button>
+                </div>
+              </div>
+              <button type="button" class="btn primary" id="btnStart">Play</button>
+              <p class="hint">or press <kbd>Enter</kbd></p>
+            </div>
+
+            <div class="pane" id="panePause" hidden>
+              <p class="pane-title">Paused</p>
+              <button type="button" class="btn primary" id="btnResume">Resume</button>
+              <button type="button" class="btn" id="btnRestart">Restart</button>
+              <button type="button" class="btn ghost" id="btnEnd">End game</button>
+            </div>
+
+            <div class="pane" id="paneOver" hidden>
+              <p class="pane-title">Game Over</p>
+              <div class="final">
+                <div><span>Score</span><strong id="finalScore">0</strong></div>
+                <div><span>Lines</span><strong id="finalLines">0</strong></div>
+                <div><span>Level</span><strong id="finalLevel">1</strong></div>
+              </div>
+              <form id="saveForm" class="save-form" autocomplete="off">
+                <label for="nameInput">Enter the Hall of Fame</label>
+                <input id="nameInput" maxlength="16" placeholder="Your name" spellcheck="false">
+                <button type="submit" class="btn primary">Save score</button>
+                <button type="button" class="btn ghost" id="btnSkip">Don't save</button>
+              </form>
+              <div id="savedBox" class="saved" hidden>
+                <p class="rank-line">Rank <strong id="savedRank">#1</strong></p>
+                <button type="button" class="btn primary" id="btnAgain">Play again</button>
+                <button type="button" class="btn ghost" id="btnShowHof">Show in Hall of Fame</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <aside class="panel">
+          <div class="card">
+            <h2>Next</h2>
+            <canvas id="next" class="mini" data-w="120" data-h="300"></canvas>
+          </div>
+          <div class="card stats">
+            <div class="stat"><span>Best</span><strong id="best">0</strong></div>
+            <div class="stat"><span>Rank</span><strong id="liveRank">&ndash;</strong></div>
+          </div>
+        </aside>
+      </section>
+
+      <section class="card hof" id="hof" aria-label="Hall of Fame">
+        <div class="hof-head">
+          <h2>Hall of Fame</h2>
+          <span class="hof-count" id="hofCount">0 entries</span>
+        </div>
+        <div class="hof-tools">
+          <input id="hofSearch" type="search" placeholder="Search name or #rank" spellcheck="false">
+          <select id="hofSort" aria-label="Sort by">
+            <option value="rank">Top score</option>
+            <option value="lines">Most lines</option>
+            <option value="level">Highest level</option>
+            <option value="newest">Newest</option>
+            <option value="oldest">Oldest</option>
+            <option value="name">Name A&ndash;Z</option>
+          </select>
+        </div>
+        <div class="hof-row hof-colhead">
+          <span class="c-rank">#</span><span class="c-name">Name</span><span class="c-score">Score</span><span class="c-lines">Lines</span><span class="c-level">Lvl</span><span class="c-date">Date</span>
+        </div>
+        <div class="hof-viewport" id="hofViewport">
+          <ol class="hof-list" id="hofList"></ol>
+          <p class="hof-empty" id="hofEmpty">No legends yet. Be the first!</p>
+        </div>
+        <div class="hof-foot">
+          <button type="button" class="btn small" id="hofExport">Export</button>
+          <button type="button" class="btn small" id="hofImport">Import</button>
+          <input type="file" id="hofFile" accept="application/json,.json" hidden>
+          <button type="button" class="btn small danger" id="hofClear">Clear</button>
+        </div>
+        <p class="hof-msg" id="hofMsg" hidden></p>
+      </section>
+
+      <section class="card keys" aria-label="Controls">
+        <h2>Controls</h2>
+        <ul>
+          <li><kbd>&larr;</kbd><kbd>&rarr;</kbd> Move</li>
+          <li><kbd>&darr;</kbd> Soft drop</li>
+          <li><kbd>Space</kbd> Hard drop</li>
+          <li><kbd>&uarr;</kbd><kbd>X</kbd> Rotate right</li>
+          <li><kbd>Z</kbd><kbd>Y</kbd><kbd>Ctrl</kbd> Rotate left</li>
+          <li><kbd>C</kbd><kbd>Shift</kbd> Hold</li>
+          <li><kbd>P</kbd><kbd>Esc</kbd> Pause</li>
+        </ul>
+      </section>
+    </main>
+  </div>
+
+  <div class="touch" id="touch" aria-hidden="true">
+    <button type="button" data-action="hold">Hold</button>
+    <button type="button" data-action="ccw">&#x21BA;</button>
+    <button type="button" data-action="cw">&#x21BB;</button>
+    <button type="button" data-action="hard">&#x2913;</button>
+    <button type="button" data-action="left">&#x25C0;</button>
+    <button type="button" data-action="soft">&#x25BC;</button>
+    <button type="button" data-action="right">&#x25B6;</button>
+    <button type="button" data-action="pause">&#x23F8;</button>
+  </div>
+
+  <script src="hof.js"></script>
+  <script src="tetris.js"></script>
+</body>
+</html>
